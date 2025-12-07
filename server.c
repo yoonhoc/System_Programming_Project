@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <signal.h>
-#include "common.h"
+#include "network_common.h"
 #include "item.h"
 
 GameState game_state;
@@ -16,6 +16,7 @@ pthread_mutex_t game_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int game_running = 1;
 volatile sig_atomic_t special_wave_triggered = 0;
 volatile sig_atomic_t redzone_triggered = 0;
+volatile sig_atomic_t player_attack_triggered = 0;  // 플레이어 공격 트리거
 
 // 알람 핸들러 (싱글플레이와 동일)
 void alarm_handler(int sig) {
@@ -32,11 +33,18 @@ void alarm_handler(int sig) {
     }
 }
 
+// 5초마다 플레이어 공격 알람
+void player_attack_alarm_handler(int sig) {
+    signal(SIGALRM, player_attack_alarm_handler);
+    player_attack_triggered = 1;
+}
+
 // 화살 생성 (싱글플레이와 동일)
 void create_arrow(Arrow* arrow, int start_x, int start_y, int target_x, int target_y, int is_special) {
     arrow->x = start_x;
     arrow->y = start_y;
     arrow->is_special = is_special;
+    arrow->owner = -1;  // 환경 공격
     
     int diff_x = target_x - start_x;
     int diff_y = target_y - start_y;
@@ -96,14 +104,77 @@ void init_game() {
     game_state.players[1].status.slow_item = 1;
 }
 
-// 충돌 체크
+// 플레이어 360도 공격 생성
+void create_player_attack(int player_id, int width, int height) {
+    if (!game_state.players[player_id].connected || game_state.players[player_id].status.lives <= 0) {
+        return;
+    }
+    
+    int center_x = game_state.players[player_id].x;
+    int center_y = game_state.players[player_id].y;
+    
+    // 8방향으로 화살 발사
+    int directions[8][2] = {
+        {1, 0},   // 오른쪽
+        {-1, 0},  // 왼쪽
+        {0, 1},   // 아래
+        {0, -1},  // 위
+        {1, 1},   // 오른쪽 아래
+        {-1, 1},  // 왼쪽 아래
+        {1, -1},  // 오른쪽 위
+        {-1, -1}  // 왼쪽 위
+    };
+    
+    for (int d = 0; d < 8; d++) {
+        for (int i = 0; i < MAX_ARROWS; i++) {
+            if (!game_state.arrows[i].active) {
+                game_state.arrows[i].x = center_x;
+                game_state.arrows[i].y = center_y;
+                game_state.arrows[i].dx = directions[d][0];
+                game_state.arrows[i].dy = directions[d][1];
+                game_state.arrows[i].is_special = 2;  // 플레이어 공격 표시 (새로운 타입)
+                game_state.arrows[i].owner = player_id;  // 공격 주인 저장
+                
+                // 화살 모양 설정
+                if (game_state.arrows[i].dx == 1 && game_state.arrows[i].dy == 0) 
+                    game_state.arrows[i].symbol = '>';
+                else if (game_state.arrows[i].dx == -1 && game_state.arrows[i].dy == 0) 
+                    game_state.arrows[i].symbol = '<';
+                else if (game_state.arrows[i].dx == 0 && game_state.arrows[i].dy == 1) 
+                    game_state.arrows[i].symbol = 'v';
+                else if (game_state.arrows[i].dx == 0 && game_state.arrows[i].dy == -1) 
+                    game_state.arrows[i].symbol = '^';
+                else if (game_state.arrows[i].dx == 1 && game_state.arrows[i].dy == 1) 
+                    game_state.arrows[i].symbol = '\\';
+                else if (game_state.arrows[i].dx == -1 && game_state.arrows[i].dy == 1) 
+                    game_state.arrows[i].symbol = '/';
+                else if (game_state.arrows[i].dx == 1 && game_state.arrows[i].dy == -1) 
+                    game_state.arrows[i].symbol = '/';
+                else if (game_state.arrows[i].dx == -1 && game_state.arrows[i].dy == -1) 
+                    game_state.arrows[i].symbol = '\\';
+                
+                game_state.arrows[i].active = 1;
+                break;
+            }
+        }
+    }
+}
+
+// 충돌 체크 (플레이어 공격 고려)
 void check_collision(Player* player, int width, int height) {
     // 화살 충돌
     for (int i = 0; i < MAX_ARROWS; i++) {
         if (game_state.arrows[i].active) {
             if (game_state.arrows[i].x == player->x && 
                 game_state.arrows[i].y == player->y) {
-                take_damage(&player->status);
+                // 플레이어 공격은 자기 자신에게는 데미지 안줌
+                if (game_state.arrows[i].is_special == 2) {
+                    if (game_state.arrows[i].owner != player->player_id) {
+                        take_damage(&player->status);
+                    }
+                } else {
+                    take_damage(&player->status);
+                }
             }
         }
     }
@@ -126,6 +197,7 @@ void* game_loop(void* arg) {
     int width = 80;
     int height = 24;
     int alarm_started = 0;  // 알람 시작 플래그
+    int player_attack_alarm_started = 0;  // 플레이어 공격 알람 플래그
     
     while (game_running) {
         // 두 플레이어가 모두 접속하면 알람 시작
@@ -134,6 +206,12 @@ void* game_loop(void* arg) {
             alarm(10);
             alarm_started = 1;
             printf("게임 시작! 알람 타이머 시작\n");
+        }
+        
+        // 플레이어 공격 타이머 시작 (5초마다)
+        if (!player_attack_alarm_started && game_state.players[0].connected && game_state.players[1].connected) {
+            // SIGALRM은 이미 사용 중이므로 프레임 카운트로 처리
+            player_attack_alarm_started = 1;
         }
         pthread_mutex_lock(&game_mutex);
         
@@ -173,6 +251,8 @@ void* game_loop(void* arg) {
             special_wave_triggered = 0;
             redzone_triggered = 0;
             alarm_started = 0;  // 알람 리셋
+            player_attack_alarm_started = 0;  // 플레이어 공격 알람 리셋
+            player_attack_alarm_started = 0;  // 플레이어 공격 알람 리셋
             
             for (int i = 0; i < MAX_PLAYERS; i++) {
                 if (game_state.players[i].connected) {
@@ -258,6 +338,16 @@ void* game_loop(void* arg) {
                 }
                 
                 game_state.players[i].score++;
+            }
+        }
+        
+        // 5초마다 플레이어 공격 (100 프레임 = 5초)
+        if (player_attack_alarm_started && game_state.frame % 100 == 0 && game_state.frame > 0) {
+            for (int i = 0; i < MAX_PLAYERS; i++) {
+                if (game_state.players[i].connected && game_state.players[i].status.lives > 0) {
+                    create_player_attack(i, width, height);
+                    printf("플레이어 %d 360도 공격 발사!\n", i);
+                }
             }
         }
         

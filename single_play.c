@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
-#include "game_structs.h"
+#include "network_common.h"  // game_structs.h → network_common.h
 #include "item.h"
 #define MAX_ARROWS 50
 #define MAX_REDZONES 10
