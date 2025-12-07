@@ -574,20 +574,46 @@ void handle_multiplay_host(void) {
     char player_name[32];
     get_player_name(player_name, sizeof(player_name));
     
-    endwin();
-    printf("Starting server...\n");
-    
+    // 서버를 백그라운드로 시작
     server_pid = fork();
     
     if (server_pid == 0) {
+        // 자식 프로세스: 서버 실행
+        // 표준 출력/에러를 /dev/null로 리다이렉트 (출력 숨김)
+        freopen("/dev/null", "w", stdout);
+        freopen("/dev/null", "w", stderr);
+        
         execl("./server", "server", NULL);
-        perror("Failed to execute server");
         exit(1);
     } else if (server_pid > 0) {
-        sleep(2);
-        printf("Server started! You can now join as Player 1.\n");
-        printf("Press Enter to continue...");
-        getchar();
+        // 부모 프로세스: 서버 시작 대기 후 클라이언트 실행
+        sleep(1);  // 서버 초기화 대기 (2초 → 1초로 단축)
+        
+        // ncurses 그대로 유지하고 "Connecting..." 메시지 표시
+        int max_y, max_x;
+        getmaxyx(stdscr, max_y, max_x);
+        int win_height = 10;
+        int win_width  = 50;
+        int start_y    = (max_y - win_height) / 2;
+        int start_x    = (max_x - win_width)  / 2;
+
+        WINDOW* wait_win = newwin(win_height, win_width, start_y, start_x);
+        wbkgd(wait_win, COLOR_PAIR(COLOR_PAIR_NORMAL));
+        box(wait_win, 0, 0);
+        
+        wattron(wait_win, COLOR_PAIR(COLOR_PAIR_TITLE) | A_BOLD);
+        mvwprintw(wait_win, 3, (win_width - 20) / 2, "Starting Server...");
+        wattroff(wait_win, COLOR_PAIR(COLOR_PAIR_TITLE) | A_BOLD);
+        
+        wattron(wait_win, COLOR_PAIR(COLOR_PAIR_ACCENT) | A_BLINK);
+        mvwprintw(wait_win, 5, (win_width - 15) / 2, "Please wait...");
+        wattroff(wait_win, COLOR_PAIR(COLOR_PAIR_ACCENT) | A_BLINK);
+        
+        wrefresh(wait_win);
+        delwin(wait_win);
+        
+        // ncurses 종료 후 클라이언트 실행
+        endwin();
         
         // 점수 파일 생성
         char temp_score_file[] = "/tmp/spacewar_score_XXXXXX";

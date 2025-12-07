@@ -346,7 +346,6 @@ void* game_loop(void* arg) {
             for (int i = 0; i < MAX_PLAYERS; i++) {
                 if (game_state.players[i].connected && game_state.players[i].status.lives > 0) {
                     create_player_attack(i, width, height);
-                    printf("플레이어 %d 360도 공격 발사!\n", i);
                 }
             }
         }
@@ -642,6 +641,7 @@ int main() {
         pthread_detach(client_thread);
     }
     
+
     close(server_sock);
     return 0;
 }
