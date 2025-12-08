@@ -1,6 +1,8 @@
 #ifndef NETWORK_COMMON_H
 #define NETWORK_COMMON_H
 
+#include <stdbool.h>
+
 #define MAX_ARROWS 50
 #define MAX_REDZONES 10
 #define PORT 8888
@@ -64,6 +66,7 @@ typedef struct {
     Player players[MAX_PLAYERS];
     int frame;
     int special_wave_frame;
+    bool is_multiplayer;
 } GameState;
 
 // 네트워크 패킷
