@@ -178,7 +178,12 @@ int main(int argc, char* argv[]) {
         clear();
         mvprintw(height / 2, (width - 20) / 2, "Game Starting...");
         refresh();
-        sleep(1);
+        //7초 대기 표시
+        for (int i = 7; i > 0; i--) {
+            mvprintw(height / 2 + 2, (width - 10) / 2, " %d ", i);
+            refresh();
+            sleep(1);
+        }
 
         // --- 메인 게임 루프 ---
         while (game_running && !game_over_flag) {
