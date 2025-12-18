@@ -41,7 +41,7 @@ void view_refresh() {
 void view_draw_game_state(const GameState* game_state, int my_player_id, int frame) {
     erase();
     
-    if (game_state->special_wave_frame > 0 && (frame % 10 < 5)) {
+    if (game_state->special_wave > 0 && (frame % 10 < 5)) {
         attron(A_REVERSE | A_BOLD);
     }
 
@@ -55,18 +55,18 @@ void view_draw_game_state(const GameState* game_state, int my_player_id, int fra
     mvaddch(GAME_HEIGHT - 1, 0, ACS_LLCORNER);
     mvaddch(GAME_HEIGHT - 1, GAME_WIDTH - 1, ACS_LRCORNER);
 
-    if (game_state->special_wave_frame > 0 && (frame % 10 < 5)) {
+    if (game_state->special_wave > 0 && (frame % 10 < 5)) {
         attroff(A_REVERSE | A_BOLD);
     }
 
     // Red Zones
     if (has_colors()) attron(COLOR_PAIR(2));
     for (int i = 0; i < MAX_REDZONES; i++) {
-        if (game_state->redzones[i].active) {
-            for (int ry = 0; ry < game_state->redzones[i].height; ry++) {
-                for (int rx = 0; rx < game_state->redzones[i].width; rx++) {
-                    int py = game_state->redzones[i].y + ry;
-                    int px = game_state->redzones[i].x + rx;
+        if (game_state->redzone[i].active) {
+            for (int ry = 0; ry < game_state->redzone[i].height; ry++) {
+                for (int rx = 0; rx < game_state->redzone[i].width; rx++) {
+                    int py = game_state->redzone[i].y + ry;
+                    int px = game_state->redzone[i].x + rx;
                     if (py > 0 && py < GAME_HEIGHT - 1 && px > 0 && px < GAME_WIDTH - 1)
                         mvaddch(py, px, '#');
                 }
@@ -75,65 +75,69 @@ void view_draw_game_state(const GameState* game_state, int my_player_id, int fra
     }
     if (has_colors()) attroff(COLOR_PAIR(2));
 
-    // Players
-    for (int i = 0; i < MAX_PLAYERS; i++) {
-        if (!game_state->players[i].connected) continue;
+    // player
+    for (int i = 0; i < 2; i++) {
+        if (!game_state->player[i].connected) continue;
         
         char p_char = (i == 0) ? '@' : '$';
         int color = (i == my_player_id) ? 3 : 6;
         int attrs = 0;
 
-        if (i == my_player_id && (game_state->players[i].status.is_invincible || game_state->players[i].status.damage_cooldown > 0)) {
+        // status 제거
+        if (i == my_player_id && (game_state->player[i].is_invincible || game_state->player[i].damage_cooldown > 0)) {
             if (frame % 4 < 2) attrs = A_BOLD; // Blinking effect
         }
 
         if (has_colors()) attron(COLOR_PAIR(color) | attrs);
-        mvaddch(game_state->players[i].y, game_state->players[i].x, p_char);
+        mvaddch(game_state->player[i].y, game_state->player[i].x, p_char);
         if (has_colors()) attroff(COLOR_PAIR(color) | attrs);
     }
 
     // Arrows
-    bool is_any_slow = game_state->players[0].status.is_slow || game_state->players[1].status.is_slow;
+    // status 제거
+    bool is_any_slow = game_state->player[0].is_slow || game_state->player[1].is_slow;
     for (int i = 0; i < MAX_ARROWS; i++) {
-        if (!game_state->arrows[i].active) continue;
+        if (!game_state->arrow[i].active) continue;
         
         int color = 0;
         int attr = 0;
 
-        if (game_state->arrows[i].is_special == 2) { // Player attack
+        if (game_state->arrow[i].is_special == 2) { // Player attack
             attr = A_BOLD;
-            if (game_state->arrows[i].owner == my_player_id) {
+            if (game_state->arrow[i].owner == my_player_id) {
                 color = 3; // 내 공격 색상 (노랑)
             } else {
                 color = 6; // 상대 공격 색상 (파랑)
             }
         }
-        else if (game_state->arrows[i].is_special == 1) { color = 1; attr = A_BOLD; } // Special
+        else if (game_state->arrow[i].is_special == 1) { color = 1; attr = A_BOLD; } // Special
         else if (is_any_slow) { color = 5; } // Slow
 
         if (has_colors() && color) attron(COLOR_PAIR(color) | attr);
-        mvaddch(game_state->arrows[i].y, game_state->arrows[i].x, game_state->arrows[i].symbol);
+        mvaddch(game_state->arrow[i].y, game_state->arrow[i].x, game_state->arrow[i].symbol);
         if (has_colors() && color) attroff(COLOR_PAIR(color) | attr);
     }
 
     // UI
     int opponent_id = (my_player_id == 0) ? 1 : 0;
-    mvprintw(0, 2, " P%d Score:%d ", my_player_id + 1, game_state->players[my_player_id].score);
+    // status 제거
+    mvprintw(0, 2, " P%d Score:%d ", my_player_id + 1, game_state->player[my_player_id].score);
     mvprintw(0, 45, " Lives:");
-    for(int k=0; k<game_state->players[my_player_id].status.lives; k++) addstr("<3");
+    for(int k=0; k<game_state->player[my_player_id].lives; k++) addstr("<3");
     
-    if (game_state->players[opponent_id].connected) {
+    if (game_state->player[opponent_id].connected) {
         mvprintw(0, 65, " Enemy:");
-        for(int k=0; k<game_state->players[opponent_id].status.lives; k++) addstr("<3");
+        for(int k=0; k<game_state->player[opponent_id].lives; k++) addstr("<3");
     }
 
-    if (game_state->special_wave_frame > 0) mvprintw(1, 2, " SPECIAL WAVE! ");
+    if (game_state->special_wave > 0) mvprintw(1, 2, " SPECIAL WAVE! ");
 
+    // status 제거
     if (has_colors()) attron(COLOR_PAIR(4));
     mvprintw(GAME_HEIGHT-1, 2, "[1]Inv:%d [2]Heal:%d [3]Slow:%d", 
-        game_state->players[my_player_id].status.invincible_item,
-        game_state->players[my_player_id].status.heal_item,
-        game_state->players[my_player_id].status.slow_item);
+        game_state->player[my_player_id].invincible_item,
+        game_state->player[my_player_id].heal_item,
+        game_state->player[my_player_id].slow_item);
     if (has_colors()) attroff(COLOR_PAIR(4));
 }
 
