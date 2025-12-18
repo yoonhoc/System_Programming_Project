@@ -1,7 +1,7 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include "network_common.h"
+#include "common.h"
 
 void use_invincible_item(PlayerStatus* status);
 void use_heal_item(PlayerStatus* status);

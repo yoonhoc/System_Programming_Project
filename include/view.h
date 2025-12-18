@@ -1,7 +1,7 @@
 #ifndef VIEW_H
 #define VIEW_H
 
-#include "network_common.h"
+#include "common.h"
 #include <curses.h>
 #include <stdbool.h>
 

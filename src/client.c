@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <netinet/tcp.h>
 #include <time.h>
-#include "network_common.h"
+#include "common.h"
 #include "game_logic.h"
 #include "view.h"
 

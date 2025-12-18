@@ -1,7 +1,7 @@
 #ifndef GAME_LOGIC_H
 #define GAME_LOGIC_H
 
-#include "network_common.h"
+#include "common.h"
 #include <stdbool.h>
 
 #define GAME_WIDTH 90

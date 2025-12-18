@@ -4,83 +4,116 @@
 #include "game_logic.h"
 #include "view.h"
 #include "item.h"
+#include "common.h"
 
-volatile sig_atomic_t special_wave_triggered = 0;
-volatile sig_atomic_t redzone_triggered = 0;
+volatile sig_atomic_t special_wave = 0;
+volatile sig_atomic_t redzone = 0;
+GameState state;
 
-void alarm_handler(int sig) {
-    signal(SIGALRM, alarm_handler);
-    static int alarm_count = 0;
-    alarm_count++;
+//화살 증가, 레드존 이벤트 처리를 위한 알람 핸들러
+void event(int sig) {
 
-    // Trigger special wave every 10 seconds
-    if (alarm_count % 1 == 0) {
-        special_wave_triggered = 1;
+    signal(SIGALRM, event);
+    static int alarmCount = 0;
+    alarmCount++;
+
+    // 10초 마다 화살 증가
+    if (alarmCount % 1 == 0) {
+        state.special_wave = 60;
     }
 
-    // Trigger redzone every 20 seconds
-    if (alarm_count % 2 == 0) {
-        redzone_triggered = 1;
+    // 20초마다 레드존
+    if (alarmCount % 2 == 0) {
+        
+        //레드존 생성
+        for (int i = 0; i < MAX_REDZONES; i++) {
+            if (!state.redzone[i].active) {
+                state.redzone[i].width = 5 + rand() % 8;
+                state.redzone[i].height = 3 + rand() % 5;
+                state.redzone[i].x = 2 + rand() % (GAME_WIDTH - state.redzone[i].width - 3);
+                state.redzone[i].y = 2 + rand() % (GAME_HEIGHT - state.redzone[i].height - 3);
+                state.redzone[i].lifetime = 200;
+                state.redzone[i].active = 1;
+                break;
+            }
+        }
     }
+    alarm(10);
 }
 
-int main(void) {
-    GameState game_state;
-    int my_player_id = 0; // In single player, we are always player 0
+int main() {
 
-    // Initialization
+    int id = 0; 
+
     view_init();
-    init_game_state(&game_state, false); // false for single player
+    init_state(&state, false);
 
-    signal(SIGALRM, alarm_handler);
-    alarm(10); // Alarm every 10 seconds
+    signal(SIGALRM, event);
+    alarm(10); 
 
-    // Game loop
-    while (game_state.players[my_player_id].status.lives > 0) {
-        // 1. Handle Input
+    //게임 루프
+    while (state.player[id].lives > 0) {  // status 제거
+
         int ch = getch();
-        Player* player = &game_state.players[my_player_id];
-
+       
         switch(ch) {
-            case KEY_LEFT:  if (player->x > 1) player->x--; break;
-            case KEY_RIGHT: if (player->x < GAME_WIDTH - 2) player->x++; break;
-            case KEY_UP:    if (player->y > 1) player->y--; break;
-            case KEY_DOWN:  if (player->y < GAME_HEIGHT - 2) player->y++; break;
-            case '1': use_invincible_item(&player->status); break;
-            case '2': use_heal_item(&player->status); break;
-            case '3': use_slow_item(&player->status); break;
-            case 'q': case 'Q':
-                player->status.lives = 0; // End game
+
+            case KEY_LEFT: 
+                if (state.player[id].x > 1) {  // 배열 접근으로 수정
+                    state.player[id].x--; 
+                }
+                break;  // if 밖으로 이동
+                
+            case KEY_RIGHT: 
+                if (state.player[id].x < GAME_WIDTH - 2) {
+                    state.player[id].x++; 
+                }
+                break;
+                
+            case KEY_UP:    
+                if (state.player[id].y > 1) {  
+                    state.player[id].y--; 
+                }
+                break;
+                
+            case KEY_DOWN:  
+                if (state.player[id].y < GAME_HEIGHT - 2) {
+                    state.player[id].y++; 
+                }
+                break;
+                
+            case '1': 
+                invincibleItem(&state.player[id]);  // status 제거, 배열 접근
+                break;
+                
+            case '2': 
+                healItem(&state.player[id]);  // status 제거, 배열 접근
+                break;
+                
+            case '3': 
+                slowItem(&state.player[id]);  // status 제거, 배열 접근
+                break;
+                
+            case 'q': 
+            case 'Q':
+                state.player[id].lives = 0;  // status 제거, 배열 접근
                 break;
         }
         flushinp();
 
-        // 2. Update Game State
-        if (special_wave_triggered) {
-            special_wave_triggered = 0;
-            trigger_special_wave(&game_state);
-            alarm(10); // Reset alarm
-        }
-
-        if (redzone_triggered) {
-            redzone_triggered = 0;
-            spawn_red_zone(&game_state, GAME_WIDTH, GAME_HEIGHT);
-        }
-
-        update_game_world(&game_state, GAME_WIDTH, GAME_HEIGHT);
+        update_game_world(&state, GAME_WIDTH, GAME_HEIGHT);
 
         // 3. Draw
-        view_draw_game_state(&game_state, my_player_id, game_state.frame);
+        view_draw_state(&state, id, state.frame);
         view_refresh();
 
-        // 4. Timing
         usleep(50000); // ~20 FPS
     }
 
     // Game Over
     alarm(0);
-    int level = game_state.players[my_player_id].score / 100;
-    view_draw_single_player_game_over(game_state.players[my_player_id].score, level);
+    int level = state.player[id].score / 100;
+    view_draw_single_player_game_over(state.player[id].score, level);
 
     view_teardown();
 

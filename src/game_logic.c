@@ -160,7 +160,7 @@ void check_collisions(GameState* state, int width, int height) {
 
 void spawn_arrow(GameState* state, int width, int height, bool is_special, int target_player_id) {
     for (int i = 0; i < MAX_ARROWS; i++) {
-        if (!state->arrows[i].active) {
+        if (!state->arrow[i].active) {
             int edge = rand() % 4;
             int start_x, start_y;
 
@@ -169,28 +169,15 @@ void spawn_arrow(GameState* state, int width, int height, bool is_special, int t
             else if (edge == 2) { start_x = rand() % (width - 2) + 1; start_y = 1; }
             else { start_x = rand() % (width - 2) + 1; start_y = height - 2; }
 
-            if (state->players[target_player_id].connected && state->players[target_player_id].status.lives > 0) {
-                create_arrow_internal(&state->arrows[i], start_x, start_y,
-                               state->players[target_player_id].x, state->players[target_player_id].y, is_special, -1);
+            if (state->player[target_player_id].connected && state->player[target_player_id].status.lives > 0) {
+                create_arrow_internal(&state->arrow[i], start_x, start_y,
+                               state->players[target_player_id].x, state->player[target_player_id].y, is_special, -1);
             }
             break;
         }
     }
 }
 
-void spawn_red_zone(GameState* state, int width, int height) {
-    for (int i = 0; i < MAX_REDZONES; i++) {
-        if (!state->redzones[i].active) {
-            state->redzones[i].width = 5 + rand() % 8;
-            state->redzones[i].height = 3 + rand() % 5;
-            state->redzones[i].x = 2 + rand() % (width - state->redzones[i].width - 3);
-            state->redzones[i].y = 2 + rand() % (height - state->redzones[i].height - 3);
-            state->redzones[i].lifetime = 200;
-            state->redzones[i].active = 1;
-            break;
-        }
-    }
-}
 
 void create_player_attack(GameState* state, int player_id) {
     if (!state->players[player_id].connected || state->players[player_id].status.lives <= 0) {
@@ -222,9 +209,7 @@ void create_player_attack(GameState* state, int player_id) {
     }
 }
 
-void trigger_special_wave(GameState* state) {
-    state->special_wave_frame = 60;
-}
+
 
 void update_game_world(GameState* state, int width, int height) {
     for (int i = 0; i < MAX_PLAYERS; i++) {
