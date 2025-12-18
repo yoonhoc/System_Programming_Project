@@ -46,7 +46,7 @@ int main() {
     int id = 0; 
 
     view_init();
-    init_state(&state, false);
+    init_game_state(&state, false);
 
     signal(SIGALRM, event);
     alarm(10); 
@@ -83,15 +83,15 @@ int main() {
                 break;
                 
             case '1': 
-                invincibleItem(&state.player[id]);  // status 제거, 배열 접근
+                use_invincible_item(&state.player[id]);  // status 제거, 배열 접근
                 break;
                 
             case '2': 
-                healItem(&state.player[id]);  // status 제거, 배열 접근
+                use_heal_item(&state.player[id]);  // status 제거, 배열 접근
                 break;
                 
             case '3': 
-                slowItem(&state.player[id]);  // status 제거, 배열 접근
+                use_slow_item(&state.player[id]);  // status 제거, 배열 접근
                 break;
                 
             case 'q': 
@@ -104,7 +104,7 @@ int main() {
         update_game_world(&state, GAME_WIDTH, GAME_HEIGHT);
 
         // 3. Draw
-        view_draw_state(&state, id, state.frame);
+        view_draw_game_state(&state, id, state.frame);
         view_refresh();
 
         usleep(50000); // ~20 FPS

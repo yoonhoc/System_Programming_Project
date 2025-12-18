@@ -9,7 +9,7 @@
 #include <signal.h>
 #include "game_logic.h"
 #include "item.h"
-#include "network_common.h"
+#include "common.h"
 
 GameState game_state;
 int client_sockets[MAX_PLAYERS] = {0};
@@ -46,11 +46,11 @@ void broadcast_packet(Packet* packet) {
 // 연결 상태 브로드캐스트
 void broadcast_connection_status() {
     for (int i = 0; i < MAX_PLAYERS; i++) {
-        if (game_state.players[i].connected) {
+        if (game_state.player[i].connected) {
             Packet packet;
             packet.type = PACKET_PLAYER_STATUS;
             packet.player_id = i;
-            memcpy(&packet.data.player_status.player, &game_state.players[i], sizeof(Player));
+            memcpy(&packet.data.player_status.player, &game_state.player[i], sizeof(Player));
             broadcast_packet(&packet);
         }
     }
@@ -68,7 +68,7 @@ void* game_loop(void* arg) {
         // 연결된 플레이어 수 확인
         int connected_count = 0;
         for (int i = 0; i < MAX_PLAYERS; i++) {
-            if (game_state.players[i].connected) {
+            if (game_state.player[i].connected) {
                 connected_count++;
             }
         }
@@ -81,7 +81,7 @@ void* game_loop(void* arg) {
             // 1. 게임 중에 한 명이 나간 경우
             printf("플레이어 연결 끊김으로 게임 종료.\n");
             for (int i = 0; i < MAX_PLAYERS; i++) {
-                if (game_state.players[i].connected) {
+                if (game_state.player[i].connected) {
                     last_alive_player = i;
                     break;
                 }
@@ -90,7 +90,7 @@ void* game_loop(void* arg) {
         } else if (connected_count == 2) {
             int alive_count = 0;
             for (int i = 0; i < MAX_PLAYERS; i++) {
-                if (game_state.players[i].connected && game_state.players[i].status.lives > 0) {
+                if (game_state.player[i].connected && game_state.player[i].lives > 0) {
                     alive_count++;
                     last_alive_player = i;
                 }
@@ -164,7 +164,7 @@ void* game_loop(void* arg) {
         // 5초마다 플레이어 공격
         if (alarm_started && game_state.frame > 0 && game_state.frame % 100 == 0) {
             for (int i = 0; i < MAX_PLAYERS; i++) {
-                if (game_state.players[i].connected && game_state.players[i].status.lives > 0) {
+                if (game_state.player[i].connected && game_state.player[i].lives > 0) {
                     create_player_attack(&game_state, i);
                 }
             }
@@ -186,18 +186,18 @@ void* game_loop(void* arg) {
         // 게임 상태 브로드캐스트
         Packet packet;
         packet.type = PACKET_ARROW_UPDATE;
-        memcpy(packet.data.arrows.arrows, game_state.arrows, sizeof(game_state.arrows));
+        memcpy(packet.data.arrows.arrows, game_state.arrow, sizeof(game_state.arrow));
         broadcast_packet(&packet);
         
         packet.type = PACKET_REDZONE_UPDATE;
-        memcpy(packet.data.redzones.redzones, game_state.redzones, sizeof(game_state.redzones));
+        memcpy(packet.data.redzones.redzones, game_state.redzone, sizeof(game_state.redzone));
         broadcast_packet(&packet);
         
         for (int i = 0; i < MAX_PLAYERS; i++) {
-            if (game_state.players[i].connected) {
+            if (game_state.player[i].connected) {
                 packet.type = PACKET_PLAYER_STATUS;
                 packet.player_id = i;
-                memcpy(&packet.data.player_status.player, &game_state.players[i], sizeof(Player));
+                memcpy(&packet.data.player_status.player, &game_state.player[i], sizeof(Player));
                 broadcast_packet(&packet);
             }
         }
@@ -217,9 +217,9 @@ void* client_handler(void* arg) {
     
     pthread_mutex_lock(&game_mutex);
     for (int i = 0; i < MAX_PLAYERS; i++) {
-        if (!game_state.players[i].connected) {
+        if (!game_state.player[i].connected) {
             player_id = i;
-            game_state.players[i].connected = 1;
+            game_state.player[i].connected = 1;
             client_sockets[i] = client_sock;
             break;
         }
@@ -261,15 +261,15 @@ void* client_handler(void* arg) {
         
         switch (recv_packet.type) {
             case PACKET_PLAYER_MOVE:
-                game_state.players[player_id].x = recv_packet.data.move.x;
-                game_state.players[player_id].y = recv_packet.data.move.y;
+                game_state.player[player_id].x = recv_packet.data.move.x;
+                game_state.player[player_id].y = recv_packet.data.move.y;
                 break;
                 
             case PACKET_ITEM_USE:
                 switch (recv_packet.data.item_use.item_type) {
-                    case 1: use_invincible_item(&game_state.players[player_id].status); break;
-                    case 2: use_heal_item(&game_state.players[player_id].status); break;
-                    case 3: use_slow_item(&game_state.players[player_id].status); break;
+                    case 1: use_invincible_item(&game_state.player[player_id]); break;
+                    case 2: use_heal_item(&game_state.player[player_id]); break;
+                    case 3: use_slow_item(&game_state.player[player_id]); break;
                 }
                 break;
             default: break;
@@ -278,9 +278,9 @@ void* client_handler(void* arg) {
     }
     
     pthread_mutex_lock(&game_mutex);
-    game_state.players[player_id].connected = 0;
-    game_state.players[player_id].status.lives = 3;
-    game_state.players[player_id].score = 0;
+    game_state.player[player_id].connected = 0;
+    game_state.player[player_id].lives = 3;
+    game_state.player[player_id].score = 0;
     client_sockets[player_id] = 0;
     pthread_mutex_unlock(&game_mutex);
     

@@ -54,7 +54,7 @@ typedef struct {
     int dx, dy;
     char symbol;
     int active;
-    int is_special;  // 0: 일반, 1: 특수 웨이브, 2: 플레이어 공격
+    int special;  // 0: 일반, 1: 특수 웨이브, 2: 플레이어 공격
     int owner;       // 공격을 발사한 플레이어 ID (-1: 환경 공격)
 } Arrow;
 
@@ -66,24 +66,12 @@ typedef struct {
     int lifetime;
 } RedZone;
 
-// --- 플레이어 상태 구조체 ---
-typedef struct {
-    int lives;
-    int invincible_item;
-    int heal_item;
-    int slow_item;
-    int is_invincible;
-    int invincible_frames;
-    int is_slow;
-    int slow_frames;
-    int damage_cooldown;
-} PlayerStatus;
 
 // --- 플레이어 정보 구조체 ---
 typedef struct {
     // 위치 정보
     int x, y;
-    int player_id;
+    int id;
     int connected;
     int score;
     
@@ -93,7 +81,7 @@ typedef struct {
     int heal_item;
     int slow_item;
     int is_invincible;
-    int invincible_frames;
+    int invincible_frames;//무적타이민ㅇ
     int is_slow;
     int slow_frames;
     int damage_cooldown;
@@ -106,7 +94,8 @@ typedef struct {
     Player player[MAX_PLAYERS];
     int frame;
     int special_wave;
-    bool is_multiplayer;
+    bool multiplay;
+
 } GameState;
 
 // --- 네트워크 패킷 구조체 ---

@@ -120,8 +120,9 @@ $(SINGLE): $(SINGLE_PLAY_OBJS) $(GAME_LOGIC_OBJS) $(VIEW_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS_NCURSES)
 
 # server 빌드 규칙
-$(SERVER): $(SERVER_OBJS) $(GAME_LOGIC_OBJS)
+$(SERVER): $(SERVER_OBJS) $(GAME_LOGIC_OBJS) $(COMMON_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS_PTHREAD)
+
 
 # client 빌드 규칙
 $(CLIENT): $(CLIENT_OBJS) $(VIEW_OBJS)
@@ -129,7 +130,7 @@ $(CLIENT): $(CLIENT_OBJS) $(VIEW_OBJS)
 
 # src 폴더의 .c 파일을 obj 폴더의 .o 파일로 컴파일
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $
+	$(CC) $(CFLAGS) -c -o $@ $ $<
 
 # clean 규칙: 빌드된 파일 및 오브젝트 파일 삭제
 clean:

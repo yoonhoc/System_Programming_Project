@@ -44,14 +44,14 @@ void* receive_thread(void* arg) {
                 memcpy(&game_state, &packet.data.initial_state.game_state, sizeof(GameState));
                 break;
             case PACKET_ARROW_UPDATE:
-                memcpy(game_state.arrows, packet.data.arrows.arrows, sizeof(game_state.arrows));
+                memcpy(game_state.arrow, packet.data.arrows.arrows, sizeof(game_state.arrow));
                 break;
             case PACKET_REDZONE_UPDATE:
-                memcpy(game_state.redzones, packet.data.redzones.redzones, sizeof(game_state.redzones));
+                memcpy(game_state.redzone, packet.data.redzones.redzones, sizeof(game_state.redzone));
                 break;
             case PACKET_PLAYER_STATUS:
                 if (packet.player_id >= 0 && packet.player_id < MAX_PLAYERS) {
-                    memcpy(&game_state.players[packet.player_id], 
+                    memcpy(&game_state.player[packet.player_id], 
                            &packet.data.player_status.player, sizeof(Player));
                 }
                 break;
@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
         // 내 연결 정보가 제대로 들어올 때까지 대기
         while (game_running) {
             pthread_mutex_lock(&state_mutex);
-            int my_connected = game_state.players[my_player_id].connected;
+            int my_connected = game_state.player[my_player_id].connected;
             pthread_mutex_unlock(&state_mutex);
             
             if (my_connected) break;
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
         
         while (game_running) {
             pthread_mutex_lock(&state_mutex);
-            int connected = game_state.players[opponent_id].connected;
+            int connected = game_state.player[opponent_id].connected;
             pthread_mutex_unlock(&state_mutex);
             
             if (connected) break;
@@ -224,19 +224,19 @@ int main(int argc, char* argv[]) {
             // 이동 처리
             if (move_key != ERR) {
                 int dx = 0, dy = 0;
-                if (move_key == KEY_LEFT && game_state.players[my_player_id].x > 1) dx = -1;
-                else if (move_key == KEY_RIGHT && game_state.players[my_player_id].x < GAME_WIDTH - 2) dx = 1;
-                else if (move_key == KEY_UP && game_state.players[my_player_id].y > 1) dy = -1;
-                else if (move_key == KEY_DOWN && game_state.players[my_player_id].y < GAME_HEIGHT - 2) dy = 1;
+                if (move_key == KEY_LEFT && game_state.player[my_player_id].x > 1) dx = -1;
+                else if (move_key == KEY_RIGHT && game_state.player[my_player_id].x < GAME_WIDTH - 2) dx = 1;
+                else if (move_key == KEY_UP && game_state.player[my_player_id].y > 1) dy = -1;
+                else if (move_key == KEY_DOWN && game_state.player[my_player_id].y < GAME_HEIGHT - 2) dy = 1;
 
                 if (dx != 0 || dy != 0) {
-                    game_state.players[my_player_id].x += dx;
-                    game_state.players[my_player_id].y += dy;
+                    game_state.player[my_player_id].x += dx;
+                    game_state.player[my_player_id].y += dy;
                     
                     packet.type = PACKET_PLAYER_MOVE;
                     packet.player_id = my_player_id;
-                    packet.data.move.x = game_state.players[my_player_id].x;
-                    packet.data.move.y = game_state.players[my_player_id].y;
+                    packet.data.move.x = game_state.player[my_player_id].x;
+                    packet.data.move.y = game_state.player[my_player_id].y;
                     send_needed = 1;
                 }
             }
@@ -268,7 +268,7 @@ int main(int argc, char* argv[]) {
         }
 
         // --- 게임 종료 화면 ---
-        view_draw_game_over_screen(winner_id, my_player_id, game_state.players[my_player_id].score);
+        view_draw_game_over_screen(winner_id, my_player_id, game_state.player[my_player_id].score);
         view_draw_message_centered("Restarting in 5s... (Q to quit)", 5);
         view_refresh();
 

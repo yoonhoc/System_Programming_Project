@@ -102,7 +102,7 @@ void view_draw_game_state(const GameState* game_state, int my_player_id, int fra
         int color = 0;
         int attr = 0;
 
-        if (game_state->arrow[i].is_special == 2) { // Player attack
+        if (game_state->arrow[i].special == 2) { // Player attack
             attr = A_BOLD;
             if (game_state->arrow[i].owner == my_player_id) {
                 color = 3; // 내 공격 색상 (노랑)
@@ -110,7 +110,7 @@ void view_draw_game_state(const GameState* game_state, int my_player_id, int fra
                 color = 6; // 상대 공격 색상 (파랑)
             }
         }
-        else if (game_state->arrow[i].is_special == 1) { color = 1; attr = A_BOLD; } // Special
+        else if (game_state->arrow[i].special == 1) { color = 1; attr = A_BOLD; } // Special
         else if (is_any_slow) { color = 5; } // Slow
 
         if (has_colors() && color) attron(COLOR_PAIR(color) | attr);
