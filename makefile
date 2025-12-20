@@ -12,18 +12,21 @@ BINDIR = bin
 DATADIR = data
 
 # 소스 파일 정의
-# Common modules
 GAME_LOGIC_SRCS = $(SRCDIR)/game_logic.c $(SRCDIR)/item.c
 VIEW_SRCS = $(SRCDIR)/view.c
-COMMON_SRCS = $(SRCDIR)/common.c $(SRCDIR)/score.c
+COMMON_SRCS = $(SRCDIR)/common.c
 
 # Target specific sources
-MENU_SRCS = $(SRCDIR)/menu.c $(SRCDIR)/score.c
+MENU_SRCS = $(SRCDIR)/menu_main.c \
+            $(SRCDIR)/menu_ui.c \
+            $(SRCDIR)/launcher.c \
+            $(SRCDIR)/score.c
+
 SINGLE_PLAY_SRCS = $(SRCDIR)/single_play.c
 SERVER_SRCS = $(SRCDIR)/server.c
 CLIENT_SRCS = $(SRCDIR)/client.c
 
-# 오브젝트 파일 정의
+# 오브젝트 파일 정의 (자동 변환)
 GAME_LOGIC_OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(GAME_LOGIC_SRCS))
 VIEW_OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(VIEW_SRCS))
 COMMON_OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(COMMON_SRCS))
@@ -52,20 +55,20 @@ all: dirs $(TARGETS)
 dirs:
 	@mkdir -p $(OBJDIR) $(BINDIR) $(DATADIR)
 
-# menu 빌드 규칙 (메인 프로그램) - COMMON_OBJS 추가!
+# menu 빌드 규칙 (메인 프로그램) - COMMON_OBJS 추가
 $(MENU): $(MENU_OBJS) $(COMMON_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS_NCURSES)
 
 # single_play 빌드 규칙
-$(SINGLE): $(SINGLE_PLAY_OBJS) $(GAME_LOGIC_OBJS) $(VIEW_OBJS)
+$(SINGLE): $(SINGLE_PLAY_OBJS) $(GAME_LOGIC_OBJS) $(VIEW_OBJS) $(COMMON_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS_NCURSES)
 
 # server 빌드 규칙 (UI 관련 파일 제외)
-$(SERVER): $(SERVER_OBJS) $(GAME_LOGIC_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS_PTHREAD)
+$(SERVER): $(SERVER_OBJS) $(GAME_LOGIC_OBJS) $(COMMON_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS_PTHREAD) $(LDFLAGS_NCURSES)
 
 # client 빌드 규칙
-$(CLIENT): $(CLIENT_OBJS) $(VIEW_OBJS)
+$(CLIENT): $(CLIENT_OBJS) $(VIEW_OBJS) $(COMMON_OBJS) $(GAME_LOGIC_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS_NCURSES) $(LDFLAGS_PTHREAD)
 
 # src 폴더의 .c 파일을 obj 폴더의 .o 파일로 컴파일
