@@ -4,7 +4,7 @@
 `ncurses` 라이브러리를 활용한 TUI(Text User Interface) 그래픽과 **TCP 소켓 통신 기반 멀티플레이**를 지원합니다.
 
 
-## 📌 프로젝트 소개
+## ► 프로젝트 소개
 
 **Space War**는 시스템 프로그래밍 과제로 제작된 리눅스 전용 터미널 게임입니다.
 플레이어는 사방에서 날아오는 화살과 위험 구역(**Red Zone**)을 피해 최대한 오래 생존해야 합니다.
@@ -12,14 +12,14 @@
 * 싱글 플레이: 혼자서 최고 점수에 도전
 * 멀티 플레이: TCP 기반 1:1 실시간 대전
 
-## 🧰 기술 스택
+## ► 기술 스택
 
 - **Language**: C
 - **Libraries**: ncurses (TUI), pthread
 - **Networking**: TCP Socket (IPv4)
 - **Platform**: Linux
 
-## ✨ 주요 기능
+## ► 주요 기능
 
 ### 🎮 메인 메뉴 (Launcher)
 
@@ -56,7 +56,7 @@
 
 
 
-## 🛠️ 설치 및 빌드 방법
+## ► 설치 및 빌드 방법
 
 ### 1️⃣ 필수 라이브러리 설치
 
@@ -100,7 +100,7 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 ```
 
 
-## 🎥 데모 영상 (Demo Video)
+## ► 데모 영상 (Demo Video)
 
 아래 링크를 통해 **게임 플레이 데모 영상**을 확인할 수 있습니다.
 
@@ -110,7 +110,7 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 
 
 
-## ▶️ 실행 방법
+## ► 실행 방법
 
 빌드가 완료되면 아래 명령어로 게임을 시작합니다.
 
@@ -120,7 +120,7 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 
 ---
 
-## ⌨️ 조작 방법
+## ► 조작 방법
 
 ### 📂 메뉴 조작
 
@@ -137,7 +137,7 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 * `Q` : 게임 포기 (패배 처리)
 
 
-## 🧭 게임 모드 설명
+## ► 게임 모드 설명
 
 * **SCOREBOARD**
   저장된 상위 10개 점수 기록(Hall of Fame) 확인
@@ -154,20 +154,20 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 * **EXIT**
   게임 종료
 
-## 👥 팀원 정보
+## ► 팀원 정보
 
 | 프로필 | 이름 | 역할 | GitHub |
 |---|---|---|---|
 | <img src="https://github.com/yoonhoc.png" width="48" /> | 최윤호 | 게임 로직 개발, 싱글/멀티플레이 개발 | https://github.com/yoonhoc |
 | <img src="https://github.com/Sumin020726.png" width="48" /> | 정수민 | TUI 개발, 스코어보드 개발 | https://github.com/Sumin020726 |
 
-## 📎 참고 사항
+## ► 참고 사항
 
 * 본 프로젝트는 **Linux 환경**을 기준으로 개발되었습니다.
 * 멀티 플레이는 동일 네트워크 환경에서 테스트하는 것을 권장합니다.
 
 
-## 📬 문의
+## ► 문의
 
 프로젝트 관련 문의 사항은 아래 이메일로 연락 바랍니다.
 
