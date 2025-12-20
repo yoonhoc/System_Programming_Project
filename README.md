@@ -173,4 +173,4 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 
 ---
 
-🎯 **경북대학교 225-2 System Programming 수업 과제용 프로젝트**
+🎯 **경북대학교 2025-2 System Programming 수업 과제용 프로젝트**
