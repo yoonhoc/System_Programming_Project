@@ -80,13 +80,13 @@ void update_player(Player* player) {
     if (player->invincible_frames > 0) {
         player->invincible_frames--; //무적 시간감소
         if (player->invincible_frames == 0) {//무적끝나면
-            player->is_invincible = 0;
+            player->invincible = 0;
         }
     }
     if (player-> slow_frames > 0) {//슬로우 상태면
         player-> slow_frames--;
         if (player-> slow_frames == 0) {
-            player-> is_slow = 0;
+            player-> slow = 0;
         }
     }
     if (player-> damage_cooldown > 0) {//화살 충돌 후 무적 상태면
@@ -99,7 +99,7 @@ void update_arrows(GameState* state, int width, int height) {
     bool is_any_slow = false;
     
     for (int i = 0; i < 2; i++) {
-        if (state->player[i].connected && state->player[i].is_slow) {
+        if (state->player[i].connected && state->player[i].slow) {
             is_any_slow = true;
             break;
         }
@@ -135,7 +135,7 @@ void update_redzones(GameState* state) {
 }
 
 void damage(Player* player) {
-    if (player->is_invincible || player->damage_cooldown > 0) {
+    if (player->invincible || player->damage_cooldown > 0) {
         return;
     }
     player->lives--;

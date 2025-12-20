@@ -92,8 +92,8 @@ int main() {
 
         update_game(&state, GAME_WIDTH, GAME_HEIGHT);
 
-        view_draw_game_state(&state, id, state.frame);
-        view_refresh();
+        draw_game(&state, id, state.frame);
+        refresh();
 
         usleep(50000); // ~20 FPS
     }
@@ -101,9 +101,9 @@ int main() {
     // Game Over
     alarm(0);
     int level = state.player[id].score / 100;
-    view_draw_single_player_game_over(state.player[id].score, level);
+    singleGameOverScreen(state.player[id].score, level);
 
-    view_teardown();
+    endwin();
 
     return 0;
 }

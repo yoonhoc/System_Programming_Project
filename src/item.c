@@ -3,7 +3,7 @@
 void invincible_item(Player* player) {
     if (player->invincible_item > 0) {
         player->invincible_item--;
-        player->is_invincible = 1;
+        player->invincible = 1;
         player->invincible_frames = 100;
     }
 }
@@ -18,7 +18,7 @@ void heal_item(Player* player) {
 void slow_item(Player* player) {
     if (player->slow_item > 0) {
         player->slow_item--;
-        player->is_slow = 1;
+        player->slow = 1;
         player->slow_frames = 200;
     }
 }

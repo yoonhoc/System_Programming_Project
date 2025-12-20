@@ -54,7 +54,7 @@
 typedef enum {
     INITIAL_STATE,   // 게임 초기 상태
     PLAYER_MOVE,     // 플레이어 이동
-    PLAYER_STATUS,   // 플레이어 상태 변경 (아이템 획득 등)
+    PLAYER_STATUS,   // 플레이어 상태 변경 
     ARROW_UPDATE,    // 화살 위치 업데이트
     REDZONE_UPDATE,  // 레드존 생성/삭제
     ITEM_USE,        // 아이템 사용
@@ -101,9 +101,9 @@ typedef struct {
     int slow_item;
     
     // 아이템 효과 상태
-    int is_invincible;      // 무적 상태 여부
+    int invincible;      // 무적 상태 여부
     int invincible_frames;  // 무적 지속 프레임
-    int is_slow;            // 감속 상태 여부
+    int slow;            // 감속 상태 여부
     int slow_frames;        // 감속 지속 프레임
 } Player;
 
