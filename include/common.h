@@ -154,4 +154,19 @@ typedef struct {
     time_t timestamp;
 } ScoreEntry;
 
+
+// =========================================================
+// [8] 함수 원형 선언 (Function Prototypes) 
+// =========================================================
+
+
+// common.c 에 정의된 UI 유틸리티 함수
+void draw_box_with_shadow(int y, int x, int h, int w);
+void show_message(const char* title, const char* message);
+
+// score.c 에 정의된 점수 관련 함수
+long highScore(void);
+void saveScore(const char* name, int score, const char* mode);
+void handleScoreboard(void);
+
 #endif // COMMON_H

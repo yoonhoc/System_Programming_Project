@@ -15,7 +15,7 @@ void view_init() {
     use_default_colors();       // 터미널 기본 색상 사용
 
     // 색상 쌍(Color Pair) 정의: init_pair(번호, 글자색, 배경색)
-    if (has_colors()) {
+    if (hasColors()) {
         init_pair(1, COLOR_RED, -1);        // 1: 빨강 (위험 요소)
         init_pair(2, COLOR_RED, COLOR_RED); // 2: 배경까지 빨강 (레드존 채우기)
         init_pair(3, COLOR_YELLOW, -1);     // 3: 노랑 (내 캐릭터, 내 공격)
@@ -53,7 +53,7 @@ void draw_game(const GameState* game_state, int id, int frame) {
     }
 
     // 2. 레드존
-    if (has_colors()) attron(COLOR_PAIR(2)); // 배경까지 빨간색
+    if (hasColors()) attron(COLOR_PAIR(2)); // 배경까지 빨간색
     for (int i = 0; i < MAX_REDZONES; i++) {
         if (game_state->redzone[i].active) {
             for (int y = 0; y < game_state->redzone[i].height; y++) {
@@ -67,7 +67,7 @@ void draw_game(const GameState* game_state, int id, int frame) {
             }
         }
     }
-    if (has_colors()) attroff(COLOR_PAIR(2));
+    if (hasColors()) attroff(COLOR_PAIR(2));
 
     // 3. 플레이어 그리기
     for (int i = 0; i < 2; i++) {
@@ -82,9 +82,9 @@ void draw_game(const GameState* game_state, int id, int frame) {
             if (frame % 4 < 2) attrs = A_BOLD; // 밝게 표시 
         }
 
-        if (has_colors()) attron(COLOR_PAIR(color) | attrs);
+        if (hasColors()) attron(COLOR_PAIR(color) | attrs);
         mvaddch(game_state->player[i].y, game_state->player[i].x, p_char);
-        if (has_colors()) attroff(COLOR_PAIR(color) | attrs);
+        if (hasColors()) attroff(COLOR_PAIR(color) | attrs);
     }
 
     // 4. 화살 그리기
@@ -111,9 +111,9 @@ void draw_game(const GameState* game_state, int id, int frame) {
              color = 5; // 화살 색 변경 (청록)
         } 
 
-        if (has_colors() && color) attron(COLOR_PAIR(color) | attr);
+        if (hasColors() && color) attron(COLOR_PAIR(color) | attr);
         mvaddch(game_state->arrow[i].y, game_state->arrow[i].x, game_state->arrow[i].symbol);
-        if (has_colors() && color) attroff(COLOR_PAIR(color) | attr);
+        if (hasColors() && color) attroff(COLOR_PAIR(color) | attr);
     }
 
     // 5. UI 및 정보 표시
@@ -134,12 +134,12 @@ void draw_game(const GameState* game_state, int id, int frame) {
     if (game_state->special_wave > 0) mvprintw(1, 2, " SPECIAL WAVE! ");
 
     // 하단: 보유 아이템 개수 표시
-    if (has_colors()) attron(COLOR_PAIR(4)); // 초록색
+    if (hasColors()) attron(COLOR_PAIR(4)); // 초록색
     mvprintw(GAME_HEIGHT-1, 2, "[1]Inv:%d [2]Heal:%d [3]Slow:%d", 
         game_state->player[id].invincible_item,
         game_state->player[id].heal_item,
         game_state->player[id].slow_item);
-    if (has_colors()) attroff(COLOR_PAIR(4));
+    if (hasColors()) attroff(COLOR_PAIR(4));
 }
 
 
@@ -160,7 +160,7 @@ void gameOverScreen(int winner_id, int id, int score) {
 
 void singleGameOverScreen(int score, int level) {
     clear();
-    if (has_colors()) attron(COLOR_PAIR(1) | A_BOLD); // 빨간색 강조
+    if (hasColors()) attron(COLOR_PAIR(1) | A_BOLD); // 빨간색 강조
     box(stdscr, 0, 0);
     
     // 아스키 아트 스타일 UI
@@ -169,7 +169,7 @@ void singleGameOverScreen(int score, int level) {
     mvprintw(GAME_HEIGHT / 2 - 2, (GAME_WIDTH - 50) / 2, "||              G A M E   O V E R             ||");
     mvprintw(GAME_HEIGHT / 2 - 1, (GAME_WIDTH - 50) / 2, "||                                            ||");
     mvprintw(GAME_HEIGHT / 2,     (GAME_WIDTH - 50) / 2, "================================================");
-    if (has_colors()) attroff(COLOR_PAIR(1) | A_BOLD);
+    if (hasColors()) attroff(COLOR_PAIR(1) | A_BOLD);
     
     // 최종 점수 및 도달 레벨 표시
     mvprintw(GAME_HEIGHT / 2 + 2, (GAME_WIDTH - 30) / 2, "Final Score: %d", score);
