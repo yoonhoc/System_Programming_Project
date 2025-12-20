@@ -3,9 +3,9 @@
 
 #include "common.h"
 
-void use_invincible_item(Player* player);
-void use_heal_item(Player* player);
-void use_slow_item(Player* player);
-void take_damage(Player* player);
+void invincible_item(Player* player);
+void heal_item(Player* player);
+void slow_item(Player* player);
+void damage(Player* player);
 
 #endif

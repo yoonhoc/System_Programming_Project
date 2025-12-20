@@ -17,9 +17,9 @@
 // 전역 변수
 int server_sock;
 GameState game_state;
-int my_player_id = -1;
-int game_over_flag = 0;
-int winner_id = -1;
+int id = -1;
+int game_over = 0;
+int winner = -1;
 pthread_mutex_t state_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int game_running = 1;
 
@@ -39,25 +39,25 @@ void* receive_thread(void* arg) {
         pthread_mutex_lock(&state_mutex);
         
         switch (packet.type) {
-            case PACKET_INITIAL_STATE:
-                my_player_id = packet.player_id;
-                memcpy(&game_state, &packet.data.initial_state.game_state, sizeof(GameState));
+            case INITIAL_STATE:
+                id = packet.id;
+                memcpy(&game_state, &packet.game_state, sizeof(GameState));
                 break;
-            case PACKET_ARROW_UPDATE:
-                memcpy(game_state.arrow, packet.data.arrows.arrows, sizeof(game_state.arrow));
+            case ARROW_UPDATE:
+                memcpy(game_state.arrow, packet.arrows, sizeof(game_state.arrow));
                 break;
-            case PACKET_REDZONE_UPDATE:
-                memcpy(game_state.redzone, packet.data.redzones.redzones, sizeof(game_state.redzone));
+            case REDZONE_UPDATE:
+                memcpy(game_state.redzone, packet.redzones, sizeof(game_state.redzone));
                 break;
-            case PACKET_PLAYER_STATUS:
-                if (packet.player_id >= 0 && packet.player_id < MAX_PLAYERS) {
-                    memcpy(&game_state.player[packet.player_id], 
-                           &packet.data.player_status.player, sizeof(Player));
+            case PLAYER_STATUS:
+                if (packet.id >= 0 && packet.id < MAX_PLAYERS) {
+                    memcpy(&game_state.player[packet.id], 
+                           &packet.player, sizeof(Player));
                 }
                 break;
-            case PACKET_GAME_OVER:
-                game_over_flag = 1;
-                winner_id = packet.player_id;
+            case GAME_OVER:
+                game_over = 1;
+                winner = packet.id;
                 game_running = 0;
                 break;
             default:
@@ -69,14 +69,6 @@ void* receive_thread(void* arg) {
     return NULL;
 }
 
-// 게임 리셋 함수
-void reset_game_state() {
-    memset(&game_state, 0, sizeof(GameState));
-    my_player_id = -1;
-    game_over_flag = 0;
-    winner_id = -1;
-    game_running = 1;
-}
 
 // 카운트다운 표시 함수
 void show_countdown() {
@@ -100,13 +92,17 @@ int main(int argc, char* argv[]) {
         printf("사용법: %s <서버IP>\n", argv[0]);
         return 1;
     }
-
-    // ncurses 초기화
     view_init();
     
     // 메인 게임 재시작 루프
     while (1) {
-        reset_game_state();
+        
+        //초기화
+        memset(&game_state, 0, sizeof(GameState));
+        id = -1;
+        game_over = 0;
+        winner = -1;
+        game_running = 1;
 
         // 소켓 생성 및 연결
         server_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -143,7 +139,7 @@ int main(int argc, char* argv[]) {
         view_draw_message_centered("Connecting to server...", 0);
         view_refresh();
 
-        while (my_player_id == -1 && game_running) {
+        while (id == -1 && game_running) {
             usleep(50000);
         }
         
@@ -156,7 +152,7 @@ int main(int argc, char* argv[]) {
         // 내 연결 정보가 제대로 들어올 때까지 대기
         while (game_running) {
             pthread_mutex_lock(&state_mutex);
-            int my_connected = game_state.player[my_player_id].connected;
+            int my_connected = game_state.player[id].connected;
             pthread_mutex_unlock(&state_mutex);
             
             if (my_connected) break;
@@ -170,11 +166,11 @@ int main(int argc, char* argv[]) {
         }
         
         // 상대방 연결 대기 (여기서 멈춰있다가 서버가 상대 접속 정보를 보내면 풀림)
-        int opponent_id = (my_player_id == 0) ? 1 : 0;
+        int opponent_id = (id == 0) ? 1 : 0;
         
         view_clear();
         char msg[50];
-        sprintf(msg, "Connected as Player %d!", my_player_id + 1);
+        sprintf(msg, "Connected as Player %d!", id + 1);
         view_draw_message_centered(msg, 0);
         view_draw_message_centered("Waiting for other player...", 2);
         view_refresh();
@@ -199,7 +195,7 @@ int main(int argc, char* argv[]) {
         show_countdown();
 
         // --- 메인 게임 루프 ---
-        while (game_running && !game_over_flag) {
+        while (game_running && !game_over) {
             int ch;
             Packet packet;
             int send_needed = 0;
@@ -224,19 +220,19 @@ int main(int argc, char* argv[]) {
             // 이동 처리
             if (move_key != ERR) {
                 int dx = 0, dy = 0;
-                if (move_key == KEY_LEFT && game_state.player[my_player_id].x > 1) dx = -1;
-                else if (move_key == KEY_RIGHT && game_state.player[my_player_id].x < GAME_WIDTH - 2) dx = 1;
-                else if (move_key == KEY_UP && game_state.player[my_player_id].y > 1) dy = -1;
-                else if (move_key == KEY_DOWN && game_state.player[my_player_id].y < GAME_HEIGHT - 2) dy = 1;
+                if (move_key == KEY_LEFT && game_state.player[id].x > 1) dx = -1;
+                else if (move_key == KEY_RIGHT && game_state.player[id].x < GAME_WIDTH - 2) dx = 1;
+                else if (move_key == KEY_UP && game_state.player[id].y > 1) dy = -1;
+                else if (move_key == KEY_DOWN && game_state.player[id].y < GAME_HEIGHT - 2) dy = 1;
 
                 if (dx != 0 || dy != 0) {
-                    game_state.player[my_player_id].x += dx;
-                    game_state.player[my_player_id].y += dy;
+                    game_state.player[id].x += dx;
+                    game_state.player[id].y += dy;
                     
-                    packet.type = PACKET_PLAYER_MOVE;
-                    packet.player_id = my_player_id;
-                    packet.data.move.x = game_state.player[my_player_id].x;
-                    packet.data.move.y = game_state.player[my_player_id].y;
+                    packet.type = PLAYER_MOVE;
+                    packet.id = id;
+                    packet.x = game_state.player[id].x;
+                    packet.y = game_state.player[id].y;
                     send_needed = 1;
                 }
             }
@@ -246,9 +242,9 @@ int main(int argc, char* argv[]) {
                 if (send_needed) {
                     send(server_sock, &packet, sizeof(Packet), 0);
                 }
-                packet.type = PACKET_ITEM_USE;
-                packet.player_id = my_player_id;
-                packet.data.item_use.item_type = item_key - '0';
+                packet.type = ITEM_USE;
+                packet.id = id;
+                packet.item_type = item_key - '0';
                 send_needed = 1;
             }
 
@@ -258,7 +254,7 @@ int main(int argc, char* argv[]) {
             }
 
             // 렌더링
-            view_draw_game_state(&game_state, my_player_id, frame);
+            view_draw_game_state(&game_state, id, frame);
 
             pthread_mutex_unlock(&state_mutex);
 
@@ -268,7 +264,7 @@ int main(int argc, char* argv[]) {
         }
 
         // --- 게임 종료 화면 ---
-        view_draw_game_over_screen(winner_id, my_player_id, game_state.player[my_player_id].score);
+        view_draw_game_over_screen(winner, id, game_state.player[id].score);
         view_draw_message_centered("Restarting in 5s... (Q to quit)", 5);
         view_refresh();
 

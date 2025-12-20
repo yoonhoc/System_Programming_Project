@@ -4,7 +4,6 @@
 #include <string.h>
 #include <time.h>
 
-// This is a helper function, not exposed in the header
 static void create_arrow(Arrow* arrow, int start_x, int start_y, int target_x, int target_y, int special, int owner) {
     arrow->x = start_x;
     arrow->y = start_y;
@@ -48,7 +47,7 @@ static void create_arrow(Arrow* arrow, int start_x, int start_y, int target_x, i
     arrow->active = 1;
 }
 
-void init_game_state(GameState* game_state, bool multiplay) {
+void init_game(GameState* game_state, bool multiplay) {
     memset(game_state, 0, sizeof(GameState));
     game_state->multiplay = multiplay;
     srand(time(NULL));
@@ -74,6 +73,7 @@ void init_game_state(GameState* game_state, bool multiplay) {
         game_state->player[1].slow_item = 1;
     }
 }
+
 
 void update_player(Player* player) {
     //무적상태이면
@@ -158,7 +158,6 @@ void check_collisions(GameState* state, int width, int height) {
             if (state->arrow[i].active && state->arrow[i].x == player->x && state->arrow[i].y == player->y) {
                 if (state->arrow[i].owner != player->id) {
                     damage(player);
-                    take_damage(player);
                     state->arrow[i].active = 0;
                 }
             }
@@ -171,7 +170,6 @@ void check_collisions(GameState* state, int width, int height) {
                     player->y >= state->redzone[i].y &&
                     player->y < state->redzone[i].y + state->redzone[i].height) {
                     damage(player);
-                    take_damage(player);
                 }
             }
         }
@@ -219,6 +217,20 @@ void spawn_arrow(GameState* state, int width, int height, bool is_special, int i
     }
 }
 
+
+void redZone(GameState* state, int width, int height) {
+    for (int i = 0; i < MAX_REDZONES; i++) {
+        if (!state->redzone[i].active) {
+            state->redzone[i].width = 5 + rand() % 8;
+            state->redzone[i].height = 3 + rand() % 5;
+            state->redzone[i].x = 2 + rand() % (width - state->redzone[i].width - 3);
+            state->redzone[i].y = 2 + rand() % (height - state->redzone[i].height - 3);
+            state->redzone[i].lifetime = 200;
+            state->redzone[i].active = 1;
+            break;
+        }
+    }
+}
 
 void create_player_attack(GameState* state, int id) {
     if (!state->player[id].connected || state->player[id].lives <= 0) {

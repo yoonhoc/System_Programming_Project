@@ -48,3 +48,4 @@ void show_message(const char* title, const char* message) {
     wgetch(msg_win);
     delwin(msg_win);
 }
+

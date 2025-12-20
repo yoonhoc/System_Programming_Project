@@ -25,18 +25,7 @@ void event(int sig) {
     // 20초마다 레드존
     if (alarmCount % 2 == 0) {
         
-        //레드존 생성
-        for (int i = 0; i < MAX_REDZONES; i++) {
-            if (!state.redzone[i].active) {
-                state.redzone[i].width = 5 + rand() % 8;
-                state.redzone[i].height = 3 + rand() % 5;
-                state.redzone[i].x = 2 + rand() % (GAME_WIDTH - state.redzone[i].width - 3);
-                state.redzone[i].y = 2 + rand() % (GAME_HEIGHT - state.redzone[i].height - 3);
-                state.redzone[i].lifetime = 200;
-                state.redzone[i].active = 1;
-                break;
-            }
-        }
+        redZone(&state, GAME_WIDTH, GAME_HEIGHT);
     }
     alarm(10);
 }
@@ -46,7 +35,7 @@ int main() {
     int id = 0; 
 
     view_init();
-    init_game_state(&state, false);
+    init_game(&state, false);
 
     signal(SIGALRM, event);
     alarm(10); 
@@ -62,7 +51,7 @@ int main() {
                 if (state.player[id].x > 1) {  // 배열 접근으로 수정
                     state.player[id].x--; 
                 }
-                break;  // if 밖으로 이동
+                break;  // 밖으로 이동
                 
             case KEY_RIGHT: 
                 if (state.player[id].x < GAME_WIDTH - 2) {
@@ -83,27 +72,26 @@ int main() {
                 break;
                 
             case '1': 
-                use_invincible_item(&state.player[id]);  // status 제거, 배열 접근
+                invincible_item(&state.player[id]); 
                 break;
                 
             case '2': 
-                use_heal_item(&state.player[id]);  // status 제거, 배열 접근
+                heal_item(&state.player[id]); 
                 break;
                 
             case '3': 
-                use_slow_item(&state.player[id]);  // status 제거, 배열 접근
+                slow_item(&state.player[id]); 
                 break;
                 
             case 'q': 
             case 'Q':
-                state.player[id].lives = 0;  // status 제거, 배열 접근
+                state.player[id].lives = 0;  
                 break;
         }
         flushinp();
 
-        update_game_world(&state, GAME_WIDTH, GAME_HEIGHT);
+        update_game(&state, GAME_WIDTH, GAME_HEIGHT);
 
-        // 3. Draw
         view_draw_game_state(&state, id, state.frame);
         view_refresh();
 
