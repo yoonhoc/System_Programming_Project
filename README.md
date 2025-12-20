@@ -3,7 +3,6 @@
 터미널 환경에서 즐기는 **실시간 슈팅 서바이벌 게임 Space War**입니다.
 `ncurses` 라이브러리를 활용한 TUI(Text User Interface) 그래픽과 **TCP 소켓 통신 기반 멀티플레이**를 지원합니다.
 
----
 
 ## 📌 프로젝트 소개
 
@@ -13,7 +12,12 @@
 * 싱글 플레이: 혼자서 최고 점수에 도전
 * 멀티 플레이: TCP 기반 1:1 실시간 대전
 
----
+## 🧰 기술 스택
+
+- **Language**: C
+- **Libraries**: ncurses (TUI), pthread
+- **Networking**: TCP Socket (IPv4)
+- **Platform**: Linux
 
 ## ✨ 주요 기능
 
@@ -50,7 +54,7 @@
 * **레드존(Red Zone)**: 일정 시간 후 폭발하여 데미지 발생
 * **특수 웨이브(Special Wave)**: 주기적으로 대량의 화살 패턴 등장
 
----
+
 
 ## 🛠️ 설치 및 빌드 방법
 
@@ -62,8 +66,6 @@
 sudo apt-get update
 sudo apt-get install libncurses5-dev libncursesw5-dev
 ```
-
----
 
 ### 2️⃣ 프로젝트 빌드
 
@@ -97,7 +99,6 @@ gcc -o bin/server src/server.c src/game_logic.c src/item.c src/common.c -Iinclud
 gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclude -lncursesw -lpthread
 ```
 
----
 
 ## 🎥 데모 영상 (Demo Video)
 
@@ -107,7 +108,7 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 
 > 싱글 플레이 및 멀티 플레이 시연 영상이 포함되어 있습니다.
 
----
+
 
 ## ▶️ 실행 방법
 
@@ -135,7 +136,6 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 * `3` : 슬로우 아이템 사용
 * `Q` : 게임 포기 (패배 처리)
 
----
 
 ## 🧭 게임 모드 설명
 
@@ -154,7 +154,6 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 * **EXIT**
   게임 종료
 
----
 ## 👥 팀원 정보
 
 | 프로필 | 이름 | 역할 | GitHub |
@@ -162,15 +161,17 @@ gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclud
 | <img src="https://github.com/yoonhoc.png" width="48" /> | 최윤호 | 게임 로직 개발, 싱글/멀티플레이 개발 | https://github.com/yoonhoc |
 | <img src="https://github.com/Sumin020726.png" width="48" /> | 정수민 | TUI 개발, 스코어보드 개발 | https://github.com/Sumin020726 |
 
-
-
----
-
 ## 📎 참고 사항
 
 * 본 프로젝트는 **Linux 환경**을 기준으로 개발되었습니다.
 * 멀티 플레이는 동일 네트워크 환경에서 테스트하는 것을 권장합니다.
 
----
 
-🎯 **경북대학교 2025-2 System Programming 수업 과제용 프로젝트**
+## 📬 문의
+
+프로젝트 관련 문의 사항은 아래 이메일로 연락 바랍니다.
+
+* ✉️ Email: **[yoonhoc@knu.ac.kr](mailto:yoonhoc@knu.ac.kr)**
+
+
+🎯 **경북대학교 2025-2 System Programming 수업 과제로 진행하였음.**
