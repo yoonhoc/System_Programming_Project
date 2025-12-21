@@ -146,12 +146,9 @@ void check_collisions(GameState* state, int width, int height) {
 
     (void)width; 
     (void)height; 
-    
-    for (int i = 0; i < 2; i++) {
-        Player* player = &state->player[i];
-    }
-    for (int p_idx = 0; p_idx < 2; p_idx++) {
-        Player* player = &state->player[p_idx];
+
+    for (int idx = 0; idx < 2; idx++) {
+        Player* player = &state->player[idx];
         if (!player->connected || player->lives <= 0) continue;
 
         for (int i = 0; i < MAX_ARROWS; i++) {

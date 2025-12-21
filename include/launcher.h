@@ -5,6 +5,6 @@ void handleSingleplay(void);
 void handleMultihost(void);
 void handleMultijoin(void);
 void cleanServer(void);
-void processGameresult(const char* temp_file, const char* player_name, const char* mode_str);
+void gameResult(const char* temp_file, const char* player_name, const char* mode_str);
 
 #endif

@@ -29,11 +29,8 @@ long highScore(void) {
 
 // 점수판에 새 기록 추가
 void saveScore(const char* name, int score, const char* mode) {
-    #ifdef _WIN32
-    int fd = open(SCORE_FILE, O_WRONLY | O_CREAT | O_APPEND | O_BINARY, SCORE_FILE_MODE);
-    #else
+
     int fd = open(SCORE_FILE, O_WRONLY | O_CREAT | O_APPEND, SCORE_FILE_MODE);
-    #endif
 
     if (fd == -1) return;
 

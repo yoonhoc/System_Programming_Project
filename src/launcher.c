@@ -34,12 +34,12 @@ static void executeGameprocess(const char* program, char* const argv[], const ch
     } else if (pid > 0) {
         // 부모 프로세스
         waitpid(pid, NULL, 0);
-        processGameresult(temp_file, player_name, mode_str);
+        gameResult(temp_file, player_name, mode_str);
     }
 }
 
 // 결과 파일 읽기 및 UI 표시
-void processGameresult(const char* temp_file, const char* player_name, const char* mode_str) {
+void gameResult(const char* temp_file, const char* player_name, const char* mode_str) {
     int finalScore = 0;
 
     FILE* scoreFile = fopen(temp_file, "r");
