@@ -78,28 +78,6 @@ make
 
 > 위 명령어 실행 시 `bin/` 디렉토리에 실행 파일들이 자동으로 생성됩니다.
 
-아래는 Makefile을 사용하지 않고 **직접 컴파일하는 방법**입니다.
-
-프로젝트 루트 디렉토리에서 아래 명령어를 순서대로 실행하세요.
-
-```bash
-# 1. bin 디렉토리 생성
-mkdir -p bin
-
-# 2. 메뉴 (Launcher) 빌드
-gcc -o bin/menu src/menu.c src/common.c src/score.c -Iinclude -lncursesw
-
-# 3. 싱글 플레이 빌드
-gcc -o bin/single_play src/single_play.c src/game_logic.c src/view.c src/item.c src/common.c -Iinclude -lncursesw -lpthread
-
-# 4. 멀티 플레이 서버 빌드
-gcc -o bin/server src/server.c src/game_logic.c src/item.c src/common.c -Iinclude -lncursesw -lpthread
-
-# 5. 멀티 플레이 클라이언트 빌드
-gcc -o bin/client src/client.c src/view.c src/game_logic.c src/common.c -Iinclude -lncursesw -lpthread
-```
-
-
 ## ► 데모 영상 (Demo Video)
 
 아래 링크를 통해 **게임 플레이 데모 영상**을 확인할 수 있습니다.
